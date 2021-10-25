@@ -1,6 +1,10 @@
 from tkinter import *
 from tkinter import messagebox, ttk
 from tkcalendar import *
+from datetime import date
+import mysql.connector
+
+
 
 # --- O que falta? --- #
 
@@ -9,10 +13,16 @@ from tkcalendar import *
 # Salvar em um banco de dados
 
 
+# ----- Conectando ao banco ----- #
+banco = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    passwd="Mysql>1234",
+    database="cadastro_lembretes"
+    )
 
 
 # ----- Metodos ----- #
-
 
 def criar_novo():
     print("Criando um novo lembrete")
@@ -32,13 +42,21 @@ def ajuda():
 def salvar():
     titulo = str(titulo_entry.get())
     descricao = str(descricao_entry.get())
-    data = calendario.get_date()
+    data_lembrete = calendario.get_date()
+
+
     print(titulo)
     print(descricao)
-    print(data)
-    messagebox.showinfo(
-                        "Aviso",
-                        f"Lembrete salvo com sucesso! \nTitulo: {titulo} \nData: {data}"
+    print(data_lembrete)
+
+    cursor = banco.cursor()
+    comandoSQL = "INSERT INTO lembrete (titulo, descricao, datalembrete) values (%s, %s, %s)"
+    dados = (str(titulo), str(descricao), str(data_lembrete))
+    cursor.execute(comandoSQL, dados)
+    banco.commit()
+
+    messagebox.showinfo("Aviso",
+                        f"Lembrete salvo com sucesso! \nTitulo: {titulo} \nData: {data_lembrete}"
     )
 
 
@@ -87,7 +105,7 @@ botao_salvar.place(x=732, y=350)
 calendario_label = Label(root, text="Selecione uma data", font=("Times", 12, 'bold'), bg="#9370DB")
 calendario_label.place(x=610, y=50)
 
-calendario = Calendar(root, setmode='day', date_pattern='d/m/yy')
+calendario = Calendar(root, setmode='day', date_pattern='d/m/yyyy')
 calendario.place(x=550, y=100)
 
 root.mainloop()
